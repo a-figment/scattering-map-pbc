@@ -1,6 +1,12 @@
 *.o
 *.out
 *.exe
+*.dat
+*.zarr
+*.png
+*.mp4
 build/
 data/
 results/
+user_src/
+user/
