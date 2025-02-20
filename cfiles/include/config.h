@@ -18,12 +18,9 @@
 //typedef boost::multiprecision::number<mp::cpp_dec_float<50>, mp::et_off> float_50; 
 
 //typedef float_50 float_;
-//using float_ = double;
-//using int_ll = std::int32_t;
-//using cid_int = std::uint32_t;
-typedef double float_;
-typedef std::int32_t int_ll;
-typedef std::uint32_t cid_int;
+using float_ = double;
+using int_ll = std::int32_t;
+using cid_int = std::uint32_t;
 
 /// Ubiquitous consts
 constexpr float_ EPSILON = std::numeric_limits<float_>::epsilon();

@@ -12,10 +12,10 @@ The codebase consists of a header only implementation of the map along with help
 (See https://www.youtube.com/@Bills_Yard for additional animations)
 ## Getting started
 
-    1. Clone `git clone a-figment/scattering-map-pbc` 
-    2. Populate directories with `mkdir -p data/{study_0,study_1} results`.
-    3. `cd cfiles/` and attempt `make`  
-    4. Run the sample code `make run TARGET=main_sample ARGS="0 0"
+1. Clone `git clone a-figment/scattering-map-pbc` 
+2. Populate directories with `mkdir -p data/{study_0,study_1} results`
+3. `cd cfiles/` and attempt `make`  
+4. Run the sample code `make run TARGET=main_sample ARGS="0 0"
 
 This will write data to `data/study_0` and generate `config.json`. Running `python ../pyfiles/sample_main.py` will generate and save some visualisations of the data (trajectory plots, animations and coordinate space) in `results/`. 
 
