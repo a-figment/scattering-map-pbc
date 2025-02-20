@@ -8,5 +8,5 @@
 build/
 data/
 results/
-user_src/
-user/
+src/user/*
+!src/user/.keep
