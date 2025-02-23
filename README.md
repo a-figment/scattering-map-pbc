@@ -45,29 +45,29 @@ This will write data to `data/study_0` and generate `config.json`. Running `pyth
     
     // Write selected trajectory data with wrapper class `Writer`
     Writer wHTL(config::DataPath + "HTL.dat");			   
-    wHTL.WriteVectorsByRow(Traj.H, Traj.Theta, Traj.Label);		            // <--- Writes 3x5 plain text matrix of heights, angles, labels
+    wHTL.WriteVectorsByRow(Traj.H, Traj.Theta, Traj.Label);	     // <--- Writes 3x5 plain text matrix of heights, angles, labels
         								    
     Writer wIP(config::DataPath + "IP.dat");
-    wIP.setStreamPrecision<float>();				                        // <--- Manually specify stream precision (default: double)
-    wIP.WriteVectorsByCol(Traj.getItinerary(), Traj.Position);		        // <--- Writes 5x2 data matrix. Itineraries are computed in post
+    wIP.setStreamPrecision<float>();                             // <--- Manually specify stream precision (default: double)
+    wIP.WriteVectorsByCol(Traj.getItinerary(), Traj.Position);   // <--- Writes 5x2 data matrix. Itineraries are computed in post
         								         		     
-    // Write trajectory data for particles starting in selected regions
-    std::vector<int> myLabels = {};					                        // <--- Leave empty to get points in all regions, else select your own 
-    std::vector<float_> myWeights = {};					                    // <--- Leave empty to get region areas as weights, else select your own 
-    size_t nIterates = 5;						                            // <--- No. iterates of the map starting from 0 
-    size_t nPoints = 1000;						                            // <--- No. of points per region (* region weight)
-    WriteTrajectoryData<float_>(nPoints, nIterates, myLabels, myWeights);   // <--- Generate 10,000 trajectories per region 
+    // Write data for particles starting in selected regions
+    std::vector<int> myLabels = {};                              // <--- Leave empty to get points in all regions, else select your own 
+    std::vector<float_> myWeights = {};                          // <--- Leave empty to get region areas as weights, else select your own 
+    size_t nIterates = 5;                                        // <--- No. iterates of the map starting from 0 
+    size_t nPoints = 1000;                                                // <--- No. of points per region (* region weight)
+    WriteTrajectoryData<float_>(nPoints, nIterates, myLabels, myWeights); // <--- Generate 10,000 trajectories per region 
     
     // Write trajectory data for particles starting in a rectangle
     std::pair<float_, float_> h_int(0.1, 0.4);
     std::pair<float_, float_> theta_int(-PI2 + EPSILON, PI/3.);	    
-    WriteTrajectoryData<float_>(nPoints, nIterates, h_int, theta_int);      // <--- Initial conditions form a rectangle [0.1,0.4] x [-pi/2, pi/3]
+    WriteTrajectoryData<float_>(nPoints, nIterates, h_int, theta_int);    // <--- Initial conditions form a rectangle [0.1,0.4] x [-pi/2, pi/3]
     
     // Write coordinate space points 
     myLabels = {5,7,11};						    
     myWeights = {};						    
     nPoints = 10000;
-    WriteRegionPoints<float_>(nPoints, myLabels, myWeights);		        // <--- Writes 10000 unweighted points belonging to each region {5,7,11}
+    WriteRegionPoints<float_>(nPoints, myLabels, myWeights);     // <--- Writes 10000 unweighted points belonging to each region {5,7,11}
 ```
 
 
