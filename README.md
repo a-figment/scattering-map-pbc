@@ -20,20 +20,20 @@ The codebase consists of a header only implementation of the map along with help
 This will write data to `data/study_0` and generate `config.json`. Running `python ../pyfiles/sample_main.py` will generate and save some visualisations of the data (trajectory plots, animations and coordinate space) in `results/`. Snippet of `sample_main.cpp` demonstrates majority of currently available features:
 
 ```
-    config::configure_runtime(argc, argv);	                // <--- Run time configuration 
-    //config::configure_compiletime(0, 0);	                // <--- Compile time configuration (alpha=pi/2, d = 1/2)
-    //config::configure_compiletime(0, 1);	                // <--- Compile time configuration (alpha=pi/2, d = 1)
+    config::configure_runtime(argc, argv);     // <--- Run time configuration 
+    //config::configure_compiletime(0, 0);     // <--- Compile time configuration (alpha=pi/2, d = 1/2)
+    //config::configure_compiletime(0, 1);     // <--- Compile time configuration (alpha=pi/2, d = 1)
 
-    ScatteringMap<float_> Map(config::d);	                // <--- Implements Eq. 10,12,14,15, \hat{S}(h,\theta)
-    //SParticle<float_> myParticle(0.25,PI/3.);             // <--- Manual initialisation: (h,\theta) = (1/4,pi/3)
-    //SParticle<float_> myParticle();		                // <--- Random initialisation in coordinate space
-    SParticle<float_> myParticle(6);		                // <--- Random initialisation in region 6
+    ScatteringMap<float_> Map(config::d);      // <--- Implements Eq. 10,12,14,15, \hat{S}(h,\theta)
+    //SParticle<float_> myParticle(0.25,PI/3.);// <--- Manual initialisation: (h,\theta) = (1/4,pi/3)
+    //SParticle<float_> myParticle();          // <--- Random initialisation in coordinate space
+    SParticle<float_> myParticle(6);           // <--- Random initialisation in region 6
     myParticle.Print();				   
 
     //// Evolve the map as:
-    Map.Evolve(myParticle);			                        // <--- Equivalent to \hat{S}(h,\theta)
+    Map.Evolve(myParticle);                    // <--- Equivalent to \hat{S}(h,\theta)
     myParticle.Print();				   
-    Map.Evolve(myParticle); 			                    // <--- \hat{S}^2(h,\theta)
+    Map.Evolve(myParticle);                    // <--- \hat{S}^2(h,\theta)
     myParticle.Print();							   
 
     // Or, get a 'discrete' trajectory 
