@@ -30,7 +30,7 @@ bin/user_%: src/user/%.cpp | bin
 bin/tests/%: tests/%.cpp | bin/tests
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $< 
 bin:
-	mkdir -p bin/tests
+	mkdir -p bin/tests bin/user
 
 clean:
 	rm -rf bin build
