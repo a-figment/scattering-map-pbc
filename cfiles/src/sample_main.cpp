@@ -35,10 +35,12 @@ int main(int argc, char *argv[])
 
     // Or, get a 'discrete' trajectory 
     myParticle = SParticle<float_>();
-    STrajectory<float_> _Traj = Map.getTrajectory(myParticle, {0,5,10,15}); // <--- Record every 5 iterates {(h,\theta),S^5(h,\theta), ...}
+    std::vector<size_t> iterates = {0,5,10,15};
+    STrajectory<float_> _Traj = Map.getTrajectory(myParticle, iterates); // <--- Record every 5 iterates {(h,\theta),S^5(h,\theta), ...}
         								     
     myParticle = SParticle<float_>(6);
-    STrajectory<float_> Traj = Map.getTrajectory(myParticle, {0,1,2,3,4});  // <--- Record first 5 iterates starting from region 6 
+    std::vector<float_> times = {0.,10.,35.};
+    STrajectory<float_> Traj = Map.getTrajectory(myParticle, times);  // <--- Record first 5 iterates starting from region 6 
     
     // Write selected trajectory data with wrapper class `Writer`
     Writer wHTL(config::DataPath + "HTL.dat");			   
@@ -61,7 +63,7 @@ int main(int argc, char *argv[])
     WriteTrajectoryData<float_>(nPoints, nIterates, h_int, theta_int);      // <--- Initial conditions form a rectangle [0.1,0.4] x [-pi/2, pi/3]
     
     // Write coordinate space points 
-    myLabels = {5,7,11};						    
+    myLabels = {5,9,11};						    
     myWeights = {};						    
     nPoints = 10000;
     WriteRegionPoints<float_>(nPoints, myLabels, myWeights);		    // <--- Writes 10000 unweighted points belonging to each region {5,7,11}
