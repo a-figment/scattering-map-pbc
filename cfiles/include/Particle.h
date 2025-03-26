@@ -43,9 +43,13 @@ struct SParticle {
     // Random inside a region 
     SParticle(const int& label) {
 	std::vector<T> h, theta;
-	// TODO: Must check that the label is valid!
-	std::tie(h, theta) = getPointsInRegion<T>(label,1);
-	Set(h[0], theta[0], 0., 0, label);
+	auto iter = find(config::regionLabels.begin(), config::regionLabels.end(), label);
+	if (iter != config::regionLabels.end()) { // Valid label
+	    std::tie(h, theta) = getPointsInRegion<T>(label,1);
+	    Set(h[0], theta[0], 0., 0, label);
+	} else {
+	    throw std::invalid_argument("ERROR: Invalid `label` argument in @SParticle().");
+	}
     }
 
     void Set(const T& h, const T& theta, const T& tau, const int_ll& position, const int& label) {
