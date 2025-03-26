@@ -12,8 +12,7 @@ template <typename T>
 struct ScatteringMap {
 	T d;
 
-	ScatteringMap(const T& channelWidth) : d(channelWidth) {
-	}
+	ScatteringMap(const T& channelWidth) : d(channelWidth) { }
 
 	/**@brief Updates the state of a particle through an iteration of the scattering map	 
 	 * 
@@ -29,6 +28,7 @@ struct ScatteringMap {
 	 *
 	 * @param SP Scattering particle
 	 * @param N Whole number sequence of iterates to be extracted
+	 * TODO: `SP.Tau = 0`? Should be able to iterate from any starting state 
 	*/
 	STrajectory<T> getTrajectory(SParticle<T>& SP, const std::vector<size_t>& N) {
 	    size_t j = 0;
@@ -57,42 +57,36 @@ struct ScatteringMap {
 	 * exceeded in one call to `Evolve(...)`. In this scenario the `STrajectory` 
 	 * is filled with replicates of `SP` spanning the localised time frame. 
 	*/
-	//STrajectory<T> getTrajectory(SParticle<T>& SP, const std::vector<T> Time) {
-    	//
-    	//    // Evolve in continuous time
-    	//    size_t tidx = 0;
-    	//    T TAU = SP.Tau;  // Current time
-    	//    T pTAU = TAU;    // Previous time
-    	//
-    	//    STrajectory<T> STrajectory(Time.size()); // Stores variables 
-    	//
-    	//    // Evolve map until time exceeds target time
-    	//    while (TAU < Time.back()) {
-    	//
-    	//	Evolve(SP);
-    	//	TAU += SP.Tau;
-    	//
-    	//	if (tau > Time.back()) {
-    	//	    std::cout << "Dwell time tau = " << tau << " exceeds maximum desired time " << Time.back() << std::endl;
-	//	    // 
-    	//	    break;
-    	//	}
-    	//
-    	//	if (tidx < Time.size() && TAU >= Time[tidx]) { // Exceeded a target time
-    	//	    // Is current iterate closer to Time than previous iterate?
-    	//	    if (abs(TAU - Time[tidx]) < abs(pTAU - Time[tidx])) {
-    	//		STrajectory.Update(SP);
-    	//	    } else {
-    	//		STrajectory.Update(SP);
-    	//	    }
-    	//	    tidx++;
-    	//	}
+	STrajectory<T> getTrajectory(SParticle<T>& SP, const std::vector<T> Time) {
+    	
+    	    // Evolve in continuous time
+    	    size_t tidx = 0;  // User must specify Time[0] = 0 otherwise it gets ignored
+    	    T TAU = SP.Tau;  // Current time
+    	    T pTAU = TAU;    // Previous time
+    	
+    	    STrajectory<T> STrajectory(Time.size()); // Stores variables 
+    	
+    	    // Evolve map until time exceeds target time
+    	    //while (TAU < Time.back()) {
+    	    while (tidx < Time.size()) {
+    	
+		SParticle<T> pSP = SP; // Particle state prior to update
+    		Evolve(SP);
+    		TAU += SP.Tau;
 
-    	//	pTAU = TAU;
-	//	//SET PREVIOUS STATE
-    	//    }
-    	//    return STrajectory;
-    	//}
+		// Particle has jumped over at least one desired time step
+		while (tidx < Time.size() && TAU >= Time[tidx]) {
+		    if (abs(TAU - Time[tidx]) < abs(pTAU - Time[tidx])) {
+			STrajectory.Update(SP);
+		    } else { // or is previous iterate:
+			STrajectory.Update(pSP);
+		    }
+		    tidx++;
+		}
+    		pTAU = TAU;
+    	    }
+    	    return STrajectory;
+    	}
 
 	// Eq. 1
 	// @brief Iterates the scattering map 
@@ -121,16 +115,17 @@ struct ScatteringMap {
 		Sg2(SP.H, SP.Theta, SP.Tau, SP.Label);
 	    }
 	    UpdatePosition(SP.Theta, SP.Position, dirFlag);
-	    UpdateLabel(SP);
+	    //UpdateLabel(SP);
+	    SP.Label = whichRegion<T>(SP.H,SP.Theta);
 	 }
 
-	void UpdateLabel(SParticle<T>& SP) {
-	    if (SP.Theta > -PI2 && SP.Theta < PI2) { // Moving in the positive direction
-		SP.Label = whichRegion<T>(SP.H,SP.Theta);
-	    } else {
-		SP.Label = whichRegion<T>(SP.H,PI-SP.Theta);
-	    }
-	}
+	//void UpdateLabel(SParticle<T>& SP) {
+	//    if (SP.Theta > -PI2 && SP.Theta < PI2) { // Moving in the positive direction
+	//	SP.Label = whichRegion<T>(SP.H,SP.Theta);
+	//    } else {
+	//	SP.Label = whichRegion<T>(SP.H,PI-SP.Theta);
+	//    }
+	//}
 
 	// @brief Updates the position of a particle based on its exit angle 
 	void UpdatePosition(const T& theta, int_ll& x, const bool& dirFlag) {

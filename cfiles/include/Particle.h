@@ -27,7 +27,7 @@ struct SParticle {
     SParticle() {
 	Random<T> h, theta;
 	T H = h.getUniformRandom(0, d);
-	T Theta = theta.getUniformRandom(-PI/(T)2, PI/(T)2);
+	T Theta = theta.getUniformRandom(-PI/(T)2, 3*PI/(T)2);
 	Set(H, Theta, 0., 0, whichRegion<T>(H,Theta));
     }
 
@@ -35,9 +35,10 @@ struct SParticle {
 	Random<T> h, theta;
 	T H = h.getUniformRandom(h_interval.first, h_interval.second);
 	T Theta = theta.getUniformRandom(theta_interval.first, theta_interval.second);
-	int region = whichRegion<T>(H,Theta);
-	if (!(Theta > -PI2 && Theta < PI2)) { region = whichRegion(H,PI-Theta); } 
-	Set(H, Theta, 0., 0, region);
+	//int region = whichRegion<T>(H,Theta);
+	//if (!(Theta > -PI2 && Theta < PI2)) { region = whichRegion(H,PI-Theta); } 
+	//Set(H, Theta, 0., 0, region);
+	Set(H, Theta, 0., 0, whichRegion(H,Theta));
     }
 
     // Random inside a region 
