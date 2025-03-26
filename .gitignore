@@ -5,8 +5,12 @@
 *.zarr
 *.png
 *.mp4
+*.gif
+config.json
+**/__pycache__
 build/
 data/
+bin/
 results/
 src/user/*
 !src/user/.keep
