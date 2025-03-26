@@ -32,4 +32,18 @@ class Random
         genny gen;
 };
 
+template<typename T>
+T runif(const T &a, const T &b) {
+   Random<T> x;
+   return x.getUniformRandom(a,b);
+}
+
+template<typename T>
+T random_vector_elem(std::vector<T>& v) {
+   std::vector<T> result;
+   std::sample(v.begin(), v.end(), std::back_inserter(result), 1,std::mt19937{std::random_device{}()});
+   return result[0];
+}
+
+
 #endif // RANDOM_H_INCLUDED
