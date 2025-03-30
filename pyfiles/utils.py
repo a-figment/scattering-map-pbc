@@ -41,18 +41,23 @@ class Ensemble:
     """@brief Collection of arrays that hold scattering map data
     All members are NxM with N = no. particles and M = no. iterations or time steps
     """
-    H: NDArray[np.float64]
-    Theta: NDArray[np.float64]
-    Tau: NDArray[np.float64]
-    Positions: NDArray[np.int64]
-    Itineraries: NDArray[str]
-    Labels: NDArray[np.int32]
+    H : NDArray[np.float64]
+    Theta : NDArray[np.float64]
+    Time : NDArray[np.float64]
+    Positions : NDArray[np.int64]
+    Itineraries : NDArray[str]
+    Labels : NDArray[np.int32]
+    Tau : NDArray[np.float64] = field(init = False)
+
+    def __post_init__(self):
+        self.Tau = np.diff(np.atleast_2d(self.Time), axis=1, prepend=0)
 
     def get_trajectory(self, i: int) -> "Ensemble":
         """@brief Gets the `i`th row (a trajectory) of each field in `Ensemble`
         @return An `Ensemble` object with 1xM arrays
         """
-        return Ensemble(**{f.name: getattr(self, f.name)[i] for f in fields(self)})
+        return Ensemble(**{f.name: getattr(self, f.name)[i] for f in fields(self) if f.init})
+
 
 @dataclass
 class PolygonalChannel:
@@ -109,15 +114,16 @@ def get_ensemble(study=STUDY_PREFIX + "0"):
     """
     all_files = get_study_files(study)
     H           = np.loadtxt(all_files["H"],           ndmin=2,dtype=np.float64)
-    Tau         = np.loadtxt(all_files["Tau"],         ndmin=2,dtype=np.float64)
+    Time        = np.loadtxt(all_files["Time"],        ndmin=2,dtype=np.float64)
+    print(Time)
     Theta       = np.loadtxt(all_files["Theta"],       ndmin=2,dtype=np.float64)
     Positions   = np.loadtxt(all_files["Positions"],   ndmin=2,dtype=np.int64)
     Itineraries = np.loadtxt(all_files["Itineraries"], ndmin=2,dtype=str)
     Labels      = np.loadtxt(all_files["Labels"],      ndmin=2,dtype=np.int32)
-    return Ensemble(H,Theta,Tau,Positions,Itineraries,Labels)
+    return Ensemble(H,Theta,Time,Positions,Itineraries,Labels)
 
 def get_trajectory_member(study=STUDY_PREFIX + "0", member_name="H"):
-    """@brief Loads one of H,Tau,Theta,Positions or Itineraries 
+    """@brief Loads one of H,Time,Theta,Positions or Itineraries 
     """
     all_files = get_study_files(study)
     ftype = np.float64
@@ -136,13 +142,13 @@ def get_ensemble_row_chunk(study, start_row, chunk_size):
     """
     all_files = get_study_files(study)
     H           = np.loadtxt(all_files["H"],           ndmin=2, skiprows=start_row, max_rows=chunk_size, dtype=np.float64)
-    Tau         = np.loadtxt(all_files["Tau"],         ndmin=2, skiprows=start_row, max_rows=chunk_size, dtype=np.float64)
+    Time        = np.loadtxt(all_files["Time"],        ndmin=2, skiprows=start_row, max_rows=chunk_size, dtype=np.float64)
     Theta       = np.loadtxt(all_files["Theta"],       ndmin=2, skiprows=start_row, max_rows=chunk_size, dtype=np.float64)
     Positions   = np.loadtxt(all_files["Positions"],   ndmin=2, skiprows=start_row, max_rows=chunk_size, dtype=np.int64)
     Labels      = np.loadtxt(all_files["Labels"],      ndmin=2, skiprows=start_row, max_rows=chunk_size, dtype=np.int32)
     # BUG:
     #Itineraries = np.loadtxt(all_files["Itineraries"], ndmin=2, skiprows=start_row, max_rows=chunk_size, dtype=str)
     Itineraries = np.array(pd.read_csv(all_files["Itineraries"], skiprows=start_row, nrows=chunk_size, dtype=str, sep=" ", header=None))
-    return Ensemble(H,Theta,Tau,Positions,Itineraries,Labels)
+    return Ensemble(H,Theta,Time,Positions,Itineraries,Labels)
 
 

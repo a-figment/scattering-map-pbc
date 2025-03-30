@@ -12,7 +12,7 @@ Channel  = myutils.get_polygonal_channel(study)        # <-- Load channel datacl
 Ensemble = myutils.get_ensemble(study)                 # <-- Load ensemble dataclass 
 
 xp = myutils.get_trajectory_member(study, "Positions") # <-- Equiv. to `Ensemble.Positions`
-
+print(Ensemble)
 Traj = Ensemble.get_trajectory(2)                      # <-- Get a trajectory from the ensemble
 prt.plot_trajectory(Channel,Traj,n_cells=5)            # <-- Plot trajectory no. 2 (`Traj`)
 prt.plot_trajectories(Channel,Ensemble,N=3)            # <-- Plot 2*N random trajectories
