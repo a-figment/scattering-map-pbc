@@ -28,20 +28,22 @@ struct ScatteringMap {
 	 *
 	 * @param SP Scattering particle
 	 * @param N Whole number sequence of iterates to be extracted
-	 * TODO: `SP.Tau = 0`? Should be able to iterate from any starting state 
 	*/
 	STrajectory<T> getTrajectory(SParticle<T>& SP, const std::vector<size_t>& N) {
 	    size_t j = 0;
-	    STrajectory<T> STrajectory(N.size());
+	    STrajectory<T> DiscreteTrajectory(N.size());
+	    T TAU = 0; // Total time
 	    for (size_t i = 0; i < N.back(); ++i) {
+
 		if (N[j] == i) { // Record the state of the N[j] iterate
-		    STrajectory.Update(SP); 
+		    DiscreteTrajectory.Update(SP,TAU); 
 		    j++;
 		}
 		Evolve(SP);
+		TAU += SP.Tau;
 	    }
-	    STrajectory.Update(SP); 
-	    return STrajectory;
+	    DiscreteTrajectory.Update(SP,TAU); 
+	    return DiscreteTrajectory;
 	}
 
 	/**
@@ -51,41 +53,41 @@ struct ScatteringMap {
 	 * @param Time Times (lengths) at which to record the particle state
 	 * @return STrajectory Scattering trajectory struct   
 	 *
-	 * NOTE: For d=1/2 the dwell time has no bound and the particle can be
-	 * effectively localised to a particular cell for extended periods. 
-	 * e.g. any given sequence of desired time points 'Time[i:j]' can be 
-	 * exceeded in one call to `Evolve(...)`. In this scenario the `STrajectory` 
+	 * NOTE 1: For d=1/2 the dwell time has no bound and the particle can be
+	 * localised to a cell an extended period. In this scenario the `STrajectory` 
 	 * is filled with replicates of `SP` spanning the localised time frame. 
 	*/
-	STrajectory<T> getTrajectory(SParticle<T>& SP, const std::vector<T> Time) {
+	STrajectory<T> getTrajectory(SParticle<T>& SP, const std::vector<T>& Time) {
     	
     	    // Evolve in continuous time
-    	    size_t tidx = 0;  // User must specify Time[0] = 0 otherwise it gets ignored
+    	    size_t tidx = 0;  
     	    T TAU = SP.Tau;  // Current time
     	    T pTAU = TAU;    // Previous time
     	
-    	    STrajectory<T> STrajectory(Time.size()); // Stores variables 
-    	
+    	    STrajectory<T> ContinuousTrajectory(Time.size()); 
+
     	    // Evolve map until time exceeds target time
-    	    //while (TAU < Time.back()) {
     	    while (tidx < Time.size()) {
     	
-		SParticle<T> pSP = SP; // Particle state prior to update
+		const SParticle<T> pSP = SP; // Particle state prior to update
     		Evolve(SP);
     		TAU += SP.Tau;
 
 		// Particle has jumped over at least one desired time step
 		while (tidx < Time.size() && TAU >= Time[tidx]) {
-		    if (abs(TAU - Time[tidx]) < abs(pTAU - Time[tidx])) {
-			STrajectory.Update(SP);
-		    } else { // or is previous iterate:
-			STrajectory.Update(pSP);
+		    SParticle<T> updateSP = pSP;
+		    T totalTime = pTAU;
+		    if ((TAU - Time[tidx]) < abs(pTAU - Time[tidx])) {
+			updateSP = SP;
+			totalTime = TAU;
 		    }
+		    ContinuousTrajectory.Update(updateSP, totalTime);
 		    tidx++;
 		}
+		//ContinuousTrajectory.UpdateTime(SP.Tau); // total time 
     		pTAU = TAU;
     	    }
-    	    return STrajectory;
+    	    return ContinuousTrajectory;
     	}
 
 	// Eq. 1
@@ -104,30 +106,21 @@ struct ScatteringMap {
 	// S(h,\theta) or S(h, \pi - \theta)
 	// Note: SP.Label must always be initialised
 	void SMap(SParticle<T>& SP, bool& dirFlag)  {
-	    if (IN_BETA19(d,SP.H,SP.Theta)) {        // RIGHT EXIT, R
+	    if (IN_BETA19(d,SP.H,SP.Theta)) {           // RIGHT EXIT, R
 		SP.Label = 19;
 		SR(SP.H, SP.Theta, SP.Tau);
-	    } else if (IN_G0(d,SP.H,SP.Theta)) {     // BOTTOM LEFT, \Gamma_0
+	    } else if (IN_G0(d,SP.H,SP.Theta)) {        // BOTTOM LEFT, \Gamma_0
 		Sg0(SP.H, SP.Theta, SP.Tau, SP.Label);
-	    } else if (IN_G3(d,SP.H,SP.Theta)) {     // TOP LEFT, \Gamma_3
+	    } else if (IN_G3(d,SP.H,SP.Theta)) {        // TOP LEFT, \Gamma_3
 		Sg3(SP.H, SP.Theta, SP.Tau, SP.Label);
 	    } else {					// TOP RIGHT, \Gamma_2
 		Sg2(SP.H, SP.Theta, SP.Tau, SP.Label);
 	    }
 	    UpdatePosition(SP.Theta, SP.Position, dirFlag);
-	    //UpdateLabel(SP);
 	    SP.Label = whichRegion<T>(SP.H,SP.Theta);
 	 }
 
-	//void UpdateLabel(SParticle<T>& SP) {
-	//    if (SP.Theta > -PI2 && SP.Theta < PI2) { // Moving in the positive direction
-	//	SP.Label = whichRegion<T>(SP.H,SP.Theta);
-	//    } else {
-	//	SP.Label = whichRegion<T>(SP.H,PI-SP.Theta);
-	//    }
-	//}
-
-	// @brief Updates the position of a particle based on its exit angle 
+	// @brief Updates the position of a particle from its exit angle 
 	void UpdatePosition(const T& theta, int_ll& x, const bool& dirFlag) {
 	    if (dirFlag && (cos(theta) >= 0)) { 
 		x = x - 1;
@@ -137,7 +130,7 @@ struct ScatteringMap {
 		x = x;
 	    }
 	}
-
+	
 	void Sg0(T& h, T& theta, T& tau, const int& currLabel) {
 	    switch (currLabel) {
 		case 0: {

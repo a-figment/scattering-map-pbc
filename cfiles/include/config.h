@@ -61,7 +61,8 @@ namespace config {
     // Common data file names 
     const std::string FILE_JSON	       = "../config.json";
     const std::string FILE_H	        = "H.dat";
-    const std::string FILE_TAU	        = "Tau.dat";
+    //const std::string FILE_TAU	        = "Tau.dat";
+    const std::string FILE_TIME	        = "Time.dat";
     const std::string FILE_THETA        = "Theta.dat";
     const std::string FILE_LABELS       = "Labels.dat";
     const std::string FILE_POSITIONS    = "Positions.dat";
@@ -120,7 +121,7 @@ namespace config {
      * all possible parameter combinations (d,alpha), regardless of runtime parameter selection
     */ 
     void writeJSONConfig() {
-	std::array<std::string,8> fileNames = { FILE_H, FILE_TAU, FILE_THETA, FILE_LABELS, 
+	std::array<std::string,8> fileNames = { FILE_H, FILE_TIME, FILE_THETA, FILE_LABELS, 
 					       FILE_POSITIONS, FILE_ITINERARIES, FILE_REGION_H,
 					       FILE_REGION_THETA };
 
@@ -139,7 +140,7 @@ namespace config {
 		}
 	    }
 	}
-	std::cout << "Writing ../config.json.\n";
+	//std::cout << "Writing ../config.json.\n";
 	std::ofstream JSONWriter(FILE_JSON);
 	JSONWriter << jsonSTUDY.dump(4); 
     }

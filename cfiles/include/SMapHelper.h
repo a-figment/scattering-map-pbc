@@ -10,6 +10,15 @@
 #include "CoordinateSpace.h"
 #include "Random.h"
 
+/**@brief Ensures incoming angle is in (-pi/2, pi/2)
+*/
+template <typename T>
+T getThetaRHS(const T& theta) {
+    if (!(theta > -PI2 && theta < PI2))
+	return PI - theta;
+    return theta;
+}
+
 /**@brief Gets the itinerary 
  *
  * Finite horizon itineraries require (h,theta) at at runtime due to bouncing trajectories
@@ -23,17 +32,19 @@ std::string getItineraryFromLabel(const T& h, const T& theta, const int& label) 
 
     if (config::widthSelection == 0) { 
     	std::string bouncing_itinerary = config::itineraries[label];
+	T theta_ = getThetaRHS(theta);
+
 	/// Sub-regions \beta_1^(n), \beta_12^(n), \beta_18^(n)
 	if (label == 1) {
-    	    for (int_ll i = 0; i < alpha(config::d,h,theta); ++i)
+    	    for (int_ll i = 0; i < alpha(config::d,h,theta_); ++i)
     	        bouncing_itinerary += "04"; 
     	    return bouncing_itinerary + "R";
     	} else if (label == 12) {
-    	    for (int_ll i = 0; i < kappa(config::d,h,theta); ++i)
+    	    for (int_ll i = 0; i < kappa(config::d,h,theta_); ++i)
     	        bouncing_itinerary += "31";
     	    return bouncing_itinerary + "R";
     	} else if (label == 18) {
-    	    for (int_ll i = 0; i < gamma(config::d,h,theta); ++i)
+    	    for (int_ll i = 0; i < gamma(config::d,h,theta_); ++i)
     	        bouncing_itinerary += "31"; 
     	    return bouncing_itinerary + "R";
     	} else {
@@ -53,51 +64,49 @@ std::string getItineraryFromLabel(const T& h, const T& theta, const int& label) 
 */
 template <typename T>
 int whichRegion(const T& h, const T& theta) {
+    T theta_ = getThetaRHS(theta);
 
-    T thetap = theta;
-    if (!(theta > -PI2 && theta < PI2))
-	thetap = PI - theta;
     // Special case for the unique region \beta_19
     if (config::widthSelection == 1) 
-	if (IN_BETA19(config::d,h,thetap)) 
+	if (IN_BETA19(config::d,h,theta_)) 
 	    return 19; 
 
-    if (IN_G0(config::d,h,thetap)) {
+    if (IN_G0(config::d,h,theta_)) {
 	if (config::widthSelection == 0) {
-	    if (IN_BETA0(config::d,h,thetap)) { return 0; } 
-	    else if (IN_BETA1(config::d,h,thetap)) { return 1; }
-	    else if (IN_BETA2(config::d,h,thetap)) { return 2; }
-	    else if (IN_BETA3(config::d,h,thetap)) { return 3; }
-	    else if (IN_BETA4(config::d,h,thetap)) { return 4; }
-	    else if (IN_BETA5(config::d,h,thetap)) { return 5; }
-	    else if (IN_BETA6(config::d,h,thetap)) { return 6; }
-	    else if (IN_BETA7(config::d,h,thetap)) { return 7; }
-	    else if (IN_BETA8(config::d,h,thetap)) { return 8; }
-	    else if (IN_BETA9(config::d,h,thetap)) { return 9; }
-	    else if (IN_BETA10(config::d,h,thetap)) { return 10; }
-	    else if (IN_BETA11(config::d,h,thetap)) { return 11; }
+	    if (IN_BETA0(config::d,h,theta_)) { return 0; } 
+	    else if (IN_BETA1(config::d,h,theta_)) { return 1; }
+	    else if (IN_BETA2(config::d,h,theta_)) { return 2; }
+	    else if (IN_BETA3(config::d,h,theta_)) { return 3; }
+	    else if (IN_BETA4(config::d,h,theta_)) { return 4; }
+	    else if (IN_BETA5(config::d,h,theta_)) { return 5; }
+	    else if (IN_BETA6(config::d,h,theta_)) { return 6; }
+	    else if (IN_BETA7(config::d,h,theta_)) { return 7; }
+	    else if (IN_BETA8(config::d,h,theta_)) { return 8; }
+	    else if (IN_BETA9(config::d,h,theta_)) { return 9; }
+	    else if (IN_BETA10(config::d,h,theta_)) { return 10; }
+	    else if (IN_BETA11(config::d,h,theta_)) { return 11; }
 	    else { return -1; }
 	} else {
-	    if (IN_BETA0(config::d,h,thetap)) { return 0; } 
-	    else if (IN_ZJ0(config::d,h,thetap)) { return 4; }
-	    else if (IN_ZJ1(config::d,h,thetap)) { return 5; }
-	    else if (IN_ZJ2(config::d,h,thetap)) { return 6; }
-	    else if (IN_ZJ3(config::d,h,thetap)) { return 8; }
-	    else if (IN_ZJ4(config::d,h,thetap)) { return 9; }
-	    else if (IN_ZJ5(config::d,h,thetap)) { return 10; }
-	    else if (IN_ZJ6(config::d,h,thetap)) { return 11; }
+	    if (IN_BETA0(config::d,h,theta_)) { return 0; } 
+	    else if (IN_ZJ0(config::d,h,theta_)) { return 4; }
+	    else if (IN_ZJ1(config::d,h,theta_)) { return 5; }
+	    else if (IN_ZJ2(config::d,h,theta_)) { return 6; }
+	    else if (IN_ZJ3(config::d,h,theta_)) { return 8; }
+	    else if (IN_ZJ4(config::d,h,theta_)) { return 9; }
+	    else if (IN_ZJ5(config::d,h,theta_)) { return 10; }
+	    else if (IN_ZJ6(config::d,h,theta_)) { return 11; }
 	    else { return -1; }
 	}
-    } else if (IN_G2(config::d,h,thetap)) {
-	if (IN_BETA12(config::d,h,thetap)) { return 12; }
-    	else if (IN_BETA13(config::d,h,thetap)) { return 13; }
-    	else if (IN_BETA14(config::d,h,thetap)) { return 14; }
-    	else if (IN_BETA15(config::d,h,thetap)) { return 15; }
+    } else if (IN_G2(config::d,h,theta_)) {
+	if (IN_BETA12(config::d,h,theta_)) { return 12; }
+    	else if (IN_BETA13(config::d,h,theta_)) { return 13; }
+    	else if (IN_BETA14(config::d,h,theta_)) { return 14; }
+    	else if (IN_BETA15(config::d,h,theta_)) { return 15; }
     	else { return -1; }
-    } else if (IN_G3(config::d,h,thetap)) {
-	if (IN_BETA16(config::d,h,thetap)) { return 16; }
-    	else if (IN_BETA17(config::d,h,thetap)) { return 17; }
-    	else if (IN_BETA18(config::d,h,thetap)) { return 18; }
+    } else if (IN_G3(config::d,h,theta_)) {
+	if (IN_BETA16(config::d,h,theta_)) { return 16; }
+    	else if (IN_BETA17(config::d,h,theta_)) { return 17; }
+    	else if (IN_BETA18(config::d,h,theta_)) { return 18; }
     	else { return -1; }
     } else { return -1; }
 }
