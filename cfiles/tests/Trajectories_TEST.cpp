@@ -97,3 +97,24 @@ BOOST_AUTO_TEST_CASE(localised_traj_2) {
     }
 }
 
+// Positions from labels matches existing method
+BOOST_AUTO_TEST_CASE(pos_from_label) {
+    size_t n = 10000;
+    size_t M = 10000;
+    std::cout << "Checking label (L/R) to position map..." << std::endl; 
+    std::cout << "NOTE: Initial horizontal velocity components which are negative are not being tested." << std::endl;
+    for (size_t i = 0; i < 2; ++i) {
+        config::configure_compiletime(0, i);
+        ScatteringMap<float_> SM(config::d);
+	for (size_t j =  0; j < M; ++j) {
+	    // Random trajectory with initial positive horizontal vel
+            float_ h_random = runif<float_>(EPSILON, config::d); 
+	    float_ theta_random = runif<float_>(-PI2 + EPSILON, PI2);
+            SParticle<float_> particle(h_random,theta_random);
+            STrajectory<float_> random_traj = SM.getTrajectory(particle, n); 
+	    BOOST_TEST(random_traj.Position == random_traj.getLiftedPositionsFromLabel(random_traj.Label));
+	    //random_traj.Print(4);
+	}
+    }
+}
+

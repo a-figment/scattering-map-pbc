@@ -8,26 +8,6 @@
 #include "Writer.h"
 #include "json.hpp" // https://github.com/nlohmann/json
 
-std::string format_itinerary(const std::string& s, size_t width) {
-    if (s.length() <= width) 
-	return s;
-    size_t keep = (width - 3) / 2;
-    return s.substr(0, keep) + "..." + s.substr(s.length() - keep);
-}
-
-// TODO: Move somewhere appropriate or use boost/format, fmt
-template <typename T>
-void PrintVector(const std::string& name, const std::vector<T>& v, const size_t& nToPrint) {
-    const size_t width = 10;
-    std::cout << "    " << std::left << std::setw(width) << name << ": ";
-    for (size_t i = 0; i < nToPrint && i < v.size(); ++i) 
-        std::cout << std::setw(width) << v[i] << " ";
-    if ((v.size() - nToPrint) > nToPrint) { std::cout << "... "; }
-    for (size_t i = (v.size() > nToPrint ? v.size() - nToPrint : 0); i < v.size(); ++i) 
-        if (i >= nToPrint)
-	    std::cout << std::setw(width) << v[i] << " ";
-    std::cout << "\n";
-}  
 /**@brief Low cost equivalent of std::vector<SParticle>
  * 
  * TODO: Currently overspecified. 
@@ -80,7 +60,7 @@ struct STrajectory {
 
     // Temporary
     void UpdateTime(const T& tau) {
-	if (nIterations < Time.size() && nIterations > 0) //?
+	if (nIterations > 0 && nIterations < Time.size()) //?
 	    Time[nIterations] = Time[nIterations-1] + tau;
     }
 
@@ -93,6 +73,29 @@ struct STrajectory {
         return itineraries;
     }
 
+    /**@brief Determines the lifted positions from a coordinate space itineray
+     * @param labels Ordered sequence of labels / coordinate space itineray
+    */
+    std::vector<int_ll> getLiftedPositionsFromLabel(const std::vector<int>& labels) const {
+	std::vector<int_ll> x(labels.size(),0);     // Change size to N later, fill at selected
+	//std::vector<int> vx(labels.size(),1);     // Change size to N later, fill at selected
+	int vx0 = 1;	    // = sgn(cos(Theta[0])) // assume initially move in positive direction
+	x[0] = 0;
+	int vx = vx0;
+	for (size_t i = 1; i < labels.size(); ++i) {
+	    std::string LorR = config::lastChars[labels[i-1]];  // Current region is trans. or refl.
+	    if (LorR == "R") {
+		x[i] = x[i-1] + vx;
+	    } else if (LorR == "L") {
+		x[i] = x[i-1];
+		vx = -vx;
+	    } else {
+		std::cout << "ERROR: getLiftedPositionsFromLabel" << std::endl;
+	    }
+	}
+	return x;
+    }
+
     /**@brief Writes all field members
      * @param trajWriters Fixed array of writer objects 
      */ 
@@ -103,6 +106,22 @@ struct STrajectory {
 	trajWriters[3].WriteRowVector<int>(Label);
 	trajWriters[4].WriteRowVector<int_ll>(Position);
 	trajWriters[5].WriteRowVector<std::string>(getItinerary());
+    }    
+
+    /**@brief Writes selected field members
+     * @param trajWriters Fixed array of writer objects 
+     */ 
+    void WriteSelected(std::array<Writer,6>& trajWriters, const std::vector<size_t>& idx) const {
+	//idx.erase(std::unique(idx.begin(), idx.end()),idx.end());
+	//
+	for (size_t i = 0; i < idx.size(); ++i) {
+	    if (idx[i] == 0) { trajWriters[0].WriteRowVector<T>(H); }
+	    else if (idx[i] == 1) { trajWriters[1].WriteRowVector<T>(Time); }
+	    else if (idx[i] == 2) { trajWriters[2].WriteRowVector<T>(Theta); }
+	    else if (idx[i] == 3) { trajWriters[3].WriteRowVector<int>(Label); }
+	    else if (idx[i] == 4) { trajWriters[4].WriteRowVector<int_ll>(Position); }
+	    else { trajWriters[5].WriteRowVector<std::string>(getItinerary()); }
+	}
     }
 
     /**@brief Summarises 
